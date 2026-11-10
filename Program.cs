@@ -23,3 +23,16 @@ if (!Directory.Exists(sourcePath))
 }
 
 Directory.CreateDirectory(replicaPath);
+
+IEnumerable<string> sourceFiles = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories);
+
+foreach (var item in sourceFiles)
+{
+	string replicaFilesPath = Path.Combine(replicaPath, Path.GetRelativePath(sourcePath, item));
+	string? replicaDirectoryName = Path.GetDirectoryName(replicaFilesPath);
+	if (replicaDirectoryName != null)
+	{
+		Directory.CreateDirectory(replicaDirectoryName);
+	}
+	File.Copy(item, replicaFilesPath, true);
+}
