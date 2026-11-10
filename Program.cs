@@ -25,6 +25,7 @@ if (!Directory.Exists(sourcePath))
 Directory.CreateDirectory(replicaPath);
 
 IEnumerable<string> sourceFiles = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories);
+IEnumerable<string> replicaFiles = Directory.EnumerateFiles(replicaPath, "*", SearchOption.AllDirectories);
 
 foreach (var item in sourceFiles)
 {
@@ -35,4 +36,13 @@ foreach (var item in sourceFiles)
 		Directory.CreateDirectory(replicaDirectoryName);
 	}
 	File.Copy(item, replicaFilesPath, true);
+}
+
+foreach (var item in replicaFiles)
+{
+	string sourceFilePath = Path.Combine(sourcePath, Path.GetRelativePath(replicaPath, item));
+	if (!File.Exists(sourceFilePath))
+	{
+		File.Delete(item);
+	}
 }
