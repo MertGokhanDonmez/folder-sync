@@ -1,4 +1,4 @@
-﻿if(args.Length != 4)
+﻿if (args.Length != 4)
 {
 	Console.WriteLine("Input error!");
 	Console.WriteLine("Usage: <source> <replica> <interval> <log>");
@@ -25,7 +25,6 @@ if (!Directory.Exists(sourcePath))
 Directory.CreateDirectory(replicaPath);
 
 IEnumerable<string> sourceFiles = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories);
-IEnumerable<string> replicaFiles = Directory.EnumerateFiles(replicaPath, "*", SearchOption.AllDirectories);
 
 foreach (var item in sourceFiles)
 {
@@ -38,6 +37,8 @@ foreach (var item in sourceFiles)
 	File.Copy(item, replicaFilesPath, true);
 }
 
+IEnumerable<string> replicaFiles = Directory.EnumerateFiles(replicaPath, "*", SearchOption.AllDirectories);
+
 foreach (var item in replicaFiles)
 {
 	string sourceFilePath = Path.Combine(sourcePath, Path.GetRelativePath(replicaPath, item));
@@ -45,4 +46,36 @@ foreach (var item in replicaFiles)
 	{
 		File.Delete(item);
 	}
+}
+
+IEnumerable<string> replicaDirectories = Directory.GetDirectories(replicaPath, "*", SearchOption.AllDirectories);
+
+foreach (var item in replicaDirectories)
+{
+	string sourceDirectoryPath = Path.Combine(sourcePath, Path.GetRelativePath(replicaPath, item));
+	if (!Directory.Exists(sourceDirectoryPath) && Directory.Exists(item))
+	{
+		Directory.Delete(item,true);
+	}
+}
+
+foreach (var item in sourceFiles)
+{
+	string replicaFilesPath = Path.Combine(replicaPath, Path.GetRelativePath(sourcePath, item));
+	string? replicaDirectoryName = Path.GetDirectoryName(replicaFilesPath);
+	if (replicaDirectoryName != null)
+	{
+		Directory.CreateDirectory(replicaDirectoryName);
+	}
+	if (!File.Exists(replicaFilesPath) || (GetHash(item) != GetHash(replicaFilesPath)))
+	{
+		File.Copy(item, replicaFilesPath, true);
+	}
+}
+
+static string GetHash(string path)
+{
+    using MD5 md5 = MD5.Create();
+	using FileStream file = File.OpenRead(path);
+	return Convert.ToHexString(md5.ComputeHash(file));
 }
